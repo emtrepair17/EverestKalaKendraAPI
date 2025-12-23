@@ -7,51 +7,52 @@ app1.use(bodyParser.raw({ type: "application/json" }));
 const createPool = require("../../config/database");
 const pool = createPool();
 
-var http = require('http');
-const { notifiProxy } = require("../../utils/proxyServer");
+// var http = require('http');
+// const { notifiProxy } = require("../../utils/proxyServer");
 
 let sessionID;
 
-const notiCall = () => {
-  var data = {
-    details: "hello this is noti from node js"
-  };
+// const notiCall = () => {
+//   var data = {
+//     details: "hello this is noti from node js"
+//   };
 
-  var postData = JSON.stringify(data);
+//   var postData = JSON.stringify(data);
 
-  var options = {
-    host: 'localhost',
-    port: 8082,
-    path: '/notification',
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json', 
-      'Content-Length': Buffer.byteLength(postData)
-    }
-  };
+//   var options = {
+//     host: 'localhost',
+//     port: 8082,
+//     path: '/notification',
+//     method: 'POST',
+//     headers: {
+//       'Content-Type': 'application/json', 
+//       'Content-Length': Buffer.byteLength(postData)
+//     }
+//   };
 
-  var httpreq = http.request(options, function (response) {
-    response.setEncoding('utf8');
-    let responseData = '';
-    response.on('data', function (chunk) {
-      responseData += chunk;
-    });
-    response.on('end', function () {
-    });
-  });
+//   var httpreq = http.request(options, function (response) {
+//     response.setEncoding('utf8');
+//     let responseData = '';
+//     response.on('data', function (chunk) {
+//       responseData += chunk;
+//     });
+//     response.on('end', function () {
+//     });
+//   });
 
-  // Error handling for the request
-  httpreq.on('error', function (error) {
-    console.error('Error making request to notification server:', error);
-    res.status(500).send("Internal Server Error");
-  });
+//   // Error handling for the request
+//   httpreq.on('error', function (error) {
+//     console.error('Error making request to notification server:', error);
+//     res.status(500).send("Internal Server Error");
+//   });
 
-  httpreq.write(postData);
-  // httpreq.end();
-}
+//   httpreq.write(postData);
+//   // httpreq.end();
+// }
 
 
 exports.userPayment = async (req, res) => {
+  console.log("i am hiting this")
   const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
   try {
     userID = req.headers["x-user-id"];
@@ -77,39 +78,31 @@ exports.userPayment = async (req, res) => {
       cancel_url: "http://localhost:3000/cancel",
     });
 
-    if(session){
-      const text =
-      "INSERT INTO payment(userid, email, session_id, payment_id, amount, status) VALUES($1, $2, $3, $4, $5, $6) RETURNING *";
-    const values = [
-      req.headers["x-user-id"],
-      req.headers["x-user-email"],
-      session.id,
-      null,
-      lineItems[0].price_data.unit_amount,
-      "pending",
-    ];
+    // if(session){
+    //   const text =
+    //   "INSERT INTO payment(userid, email, session_id, payment_id, amount, status) VALUES($1, $2, $3, $4, $5, $6) RETURNING *";
+    // const values = [
+    //   req.headers["x-user-id"],
+    //   req.headers["x-user-email"],
+    //   session.id,
+    //   null,
+    //   lineItems[0].price_data.unit_amount,
+    //   "pending",
+    // ];
 
-    pool.query(text, values, (error, results) => {
-      if (error) {
-        throw error;
-      }else{
-        notiCall()
-      }
-    });
+    // sessionID = session.id;
 
-    sessionID = session.id;
+    // }
 
-    }
+    // res.json({ id: session.id });
 
-    res.json({ id: session.id });
+    res.json({ id: "everything is good" });
 
   } catch (error) {
     console.error("Error creating Checkout Session:", error);
     res.status(500).send("Internal Server Error");
   }
 };
-
-
 
 
 // Webhook endpoint for handling events
@@ -160,4 +153,10 @@ exports.webhooks = async (req, res) => {
   }
 
   res.status(200).end();
+};
+
+
+exports.homeFunc = async (req, res) => {
+  console.log("this is here")
+ res.json({ "desc": "this is confirm that api is running" });
 };

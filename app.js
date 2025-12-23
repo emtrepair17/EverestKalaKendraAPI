@@ -5,12 +5,18 @@ const bodyParser = require('body-parser');
 
 app.use(bodyParser.raw({ type: 'application/json' }));
 
-app.use(express.json());
-const corsOptions ={
-    origin:'*', 
-    credentials:true,
-    optionSuccessStatus:200,
- }
+// app.use(express.json());
+// const corsOptions ={
+//     origin:'*', 
+//     credentials:true,
+//     optionSuccessStatus:200,
+//  }
+
+app.use(cors({
+  origin: "http://localhost:5173",  // allow frontend
+  methods: "GET,POST,PUT,DELETE",
+  credentials: true
+}));
 
 const payment = require('./routes/payment')
 
@@ -38,6 +44,6 @@ const payment = require('./routes/payment')
 
 app.use('/payment', payment)
 
-app.use(cors(corsOptions))
+app.use(cors());
 
 module.exports = app;
