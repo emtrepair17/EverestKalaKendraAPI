@@ -52,55 +52,39 @@ let sessionID;
 
 
 exports.userPayment = async (req, res) => {
-  console.log("i am hiting this")
-  const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
-  try {
-    userID = req.headers["x-user-id"];
-    const lineItems = [
-      {
-        price_data: {
-          currency: "usd",
-          product_data: {
-            name: "rich dad and poor dad",
-            images: [],
-          },
-          unit_amount: 10 * 100,
-        },
-        quantity: 12,
-      },
-    ];
+  console.log("✅ Payment endpoint hit");
 
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+  try {
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      line_items: lineItems,
       mode: "payment",
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: "rich dad and poor dad",
+            },
+            unit_amount: 10 * 100,
+          },
+          quantity: 1,
+        },
+      ],
       success_url: "http://localhost:3000/movieList",
       cancel_url: "http://localhost:3000/cancel",
     });
 
-    // if(session){
-    //   const text =
-    //   "INSERT INTO payment(userid, email, session_id, payment_id, amount, status) VALUES($1, $2, $3, $4, $5, $6) RETURNING *";
-    // const values = [
-    //   req.headers["x-user-id"],
-    //   req.headers["x-user-email"],
-    //   session.id,
-    //   null,
-    //   lineItems[0].price_data.unit_amount,
-    //   "pending",
-    // ];
+    console.log("SESSION URL 👉", session.url);
 
-    // sessionID = session.id;
-
-    // }
-
-    // res.json({ id: session.id });
-
-    res.json({ id: "everything is good" });
+    return res.status(200).json({
+      url: session.url,
+    });
 
   } catch (error) {
-    console.error("Error creating Checkout Session:", error);
-    res.status(500).send("Internal Server Error");
+    console.error("❌ Stripe error:", error);
+    return res.status(500).json({ error: error.message });
   }
 };
 
