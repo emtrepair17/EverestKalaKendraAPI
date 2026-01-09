@@ -76,8 +76,6 @@ exports.userPayment = async (req, res) => {
       cancel_url: "http://localhost:5173/payment-failure",
     });
 
-    console.log("SESSION URL 👉", session.url);
-
     return res.status(200).json({
       url: session.url,
     });
@@ -91,6 +89,7 @@ exports.userPayment = async (req, res) => {
 
 // Webhook endpoint for handling events
 exports.webhooks = async (req, res) => {
+  console.log("Calling webhook")
   let event;
   const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
   try {
@@ -111,6 +110,7 @@ exports.webhooks = async (req, res) => {
     case "checkout.session.completed":
       const session = event.data.object;
       const paymentIntentId = session.payment_intent;
+      console.log("into the webhook => ", paymentIntentId)
       try {
         const paymentIntent = await stripe.paymentIntents.retrieve(
           paymentIntentId
